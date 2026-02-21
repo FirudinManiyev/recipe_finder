@@ -1,0 +1,16 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio
+.vs/
+
+# User-specific files
+*.user
+*.suo
+
+# Environment files
+.env
+
+# Node
+node_modules/
