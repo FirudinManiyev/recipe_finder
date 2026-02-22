@@ -96,7 +96,7 @@ namespace RecipeFinderAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<RecipeDto>> SearchByIngredientsAsync(List<string> ingredients)
+        public async Task<List<RecipeDto>> SearchAsync(RecipeSearchDto searchDto)
         {
             var recipes = await _context.Recipes
                 .Include(r => r.RecipeIngredients)
@@ -109,8 +109,17 @@ namespace RecipeFinderAPI.Services
                     .Select(ri => ri.Ingredient.Name.ToLower())
                     .ToList();
 
-                var matched = ingredients
-                    .Count(i => recipeIngredients.Contains(i.ToLower()));
+                var userIngredients = searchDto.Ingredients
+                    .Select(i => i.ToLower())
+                    .ToList();
+
+                var matchedIngredients = recipeIngredients
+                    .Where(i => userIngredients.Contains(i))
+                    .ToList();
+
+                var missingIngredients = recipeIngredients
+                    .Where(i => !userIngredients.Contains(i))
+                    .ToList();
 
                 return new RecipeDto
                 {
@@ -121,14 +130,62 @@ namespace RecipeFinderAPI.Services
                     Difficulty = r.Difficulty,
                     ImageUrl = r.ImageUrl,
                     Ingredients = recipeIngredients,
-                    MatchingScore = matched
+                    MatchingScore = matchedIngredients.Count,
+                    MissingIngredients = missingIngredients
                 };
-            })
-            .Where(r => r.MatchingScore > 0)
-            .OrderByDescending(r => r.MatchingScore)
-            .ToList();
+            });
 
-            return result;
+            // Ingredient match filter
+            result = result.Where(r => r.MatchingScore > 0);
+
+            // Cooking time filter
+            if (searchDto.MaxCookingTime.HasValue)
+                result = result.Where(r => r.CookingTime <= searchDto.MaxCookingTime.Value);
+
+            // Difficulty filter
+            if (!string.IsNullOrEmpty(searchDto.Difficulty))
+                result = result.Where(r =>
+                    r.Difficulty.ToLower() == searchDto.Difficulty.ToLower());
+
+            // Sorting
+            result = searchDto.SortBy switch
+            {
+                "mostmatched" => result.OrderByDescending(r => r.MatchingScore),
+                "newest" => result.OrderByDescending(r => r.Id),
+                "az" => result.OrderBy(r => r.Title),
+                _ => result.OrderByDescending(r => r.MatchingScore)
+            };
+
+            return result.ToList();
+        }
+
+        public async Task<RecipeDto> GetRandomAsync()
+        {
+            var recipes = await _context.Recipes
+                .Include(r => r.RecipeIngredients)
+                .ThenInclude(ri => ri.Ingredient)
+                .ToListAsync();
+
+            if (!recipes.Any())
+                return null;
+
+            var random = new Random();
+            var recipe = recipes[random.Next(recipes.Count)];
+
+            return new RecipeDto
+            {
+                Id = recipe.Id,
+                Title = recipe.Title,
+                Description = recipe.Description,
+                CookingTime = recipe.CookingTime,
+                Difficulty = recipe.Difficulty,
+                ImageUrl = recipe.ImageUrl,
+                Ingredients = recipe.RecipeIngredients
+                    .Select(ri => ri.Ingredient.Name)
+                    .ToList(),
+                MatchingScore = 0,
+                MissingIngredients = new List<string>()
+            };
         }
     }
 }

@@ -10,5 +10,6 @@
         public string ImageUrl { get; set; }
         public List<string> Ingredients { get; set; }
         public int MatchingScore { get; set; }
+        public List<string> MissingIngredients { get; set; } = new();
     }
 }

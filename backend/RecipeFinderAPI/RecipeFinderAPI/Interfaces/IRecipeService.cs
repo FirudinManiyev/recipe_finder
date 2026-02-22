@@ -7,6 +7,7 @@ namespace RecipeFinderAPI.Interfaces
         Task<List<RecipeDto>> GetAllAsync();
         Task<RecipeDto> GetByIdAsync(int id);
         Task CreateAsync(CreateRecipeDto dto);
-        Task<List<RecipeDto>> SearchByIngredientsAsync(List<string> ingredients);
+        Task<List<RecipeDto>> SearchAsync(RecipeSearchDto searchDto);
+        Task<RecipeDto> GetRandomAsync();
     }
 }

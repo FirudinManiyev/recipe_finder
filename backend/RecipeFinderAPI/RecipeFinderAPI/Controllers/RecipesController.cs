@@ -41,10 +41,21 @@ namespace RecipeFinderAPI.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<IActionResult> Search([FromBody] List<string> ingredients)
+        public async Task<IActionResult> Search([FromBody] RecipeSearchDto searchDto)
         {
-            var result = await _service.SearchByIngredientsAsync(ingredients);
+            var result = await _service.SearchAsync(searchDto);
             return Ok(result);
+        }
+
+        [HttpGet("random")]
+        public async Task<IActionResult> GetRandom()
+        {
+            var recipe = await _service.GetRandomAsync();
+
+            if (recipe == null)
+                return NotFound();
+
+            return Ok(recipe);
         }
     }
 }
