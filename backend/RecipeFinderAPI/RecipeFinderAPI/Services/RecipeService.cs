@@ -2,6 +2,7 @@
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
+using RecipeFinderAPI.Helpers;
 using RecipeFinderAPI.Interfaces;
 
 namespace RecipeFinderAPI.Services
@@ -15,11 +16,17 @@ namespace RecipeFinderAPI.Services
             _context = context;
         }
 
-        public async Task<List<RecipeDto>> GetAllAsync()
+        public async Task<List<RecipeDto>> GetAllAsync(PaginationParams paginationParams)
         {
-            var recipes = await _context.Recipes
+            var query = _context.Recipes
                 .Include(r => r.RecipeIngredients)
                 .ThenInclude(ri => ri.Ingredient)
+                .AsQueryable();
+
+            var recipes = await query
+                .OrderByDescending(r => r.Id)
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
                 .ToListAsync();
 
             return recipes.Select(r => new RecipeDto
@@ -33,7 +40,8 @@ namespace RecipeFinderAPI.Services
                 Ingredients = r.RecipeIngredients
                     .Select(ri => ri.Ingredient.Name)
                     .ToList(),
-                MatchingScore = 0
+                MatchingScore = 0,
+                MissingIngredients = new List<string>()
             }).ToList();
         }
 
@@ -186,6 +194,58 @@ namespace RecipeFinderAPI.Services
                 MatchingScore = 0,
                 MissingIngredients = new List<string>()
             };
+        }
+
+        public async Task UpdateAsync(int id, CreateRecipeDto dto)
+        {
+            var recipe = await _context.Recipes
+                .Include(r => r.RecipeIngredients)
+                .ThenInclude(ri => ri.Ingredient)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (recipe == null)
+                throw new Exception("Resept tapılmadı");
+
+            recipe.Title = dto.Title;
+            recipe.Description = dto.Description;
+            recipe.Instructions = dto.Instructions;
+            recipe.CookingTime = dto.CookingTime;
+            recipe.Difficulty = dto.Difficulty;
+            recipe.ImageUrl = dto.ImageUrl;
+
+            // Köhnə ingredientləri silirik
+            recipe.RecipeIngredients.Clear();
+
+            foreach (var ingredientName in dto.Ingredients)
+            {
+                var ingredient = await _context.Ingredients
+                    .FirstOrDefaultAsync(i => i.Name == ingredientName);
+
+                if (ingredient == null)
+                {
+                    ingredient = new Ingredient { Name = ingredientName };
+                    _context.Ingredients.Add(ingredient);
+                }
+
+                recipe.RecipeIngredients.Add(new RecipeIngredient
+                {
+                    Recipe = recipe,
+                    Ingredient = ingredient
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var recipe = await _context.Recipes.FindAsync(id);
+
+            if (recipe == null)
+                throw new Exception("Resept tapılmadı");
+
+            _context.Recipes.Remove(recipe);
+            await _context.SaveChangesAsync();
         }
     }
 }

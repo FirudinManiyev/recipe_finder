@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecipeFinderAPI.DTOs;
+using RecipeFinderAPI.Helpers;
 using RecipeFinderAPI.Interfaces;
 
 namespace RecipeFinderAPI.Controllers
@@ -16,9 +17,9 @@ namespace RecipeFinderAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
         {
-            var recipes = await _service.GetAllAsync();
+            var recipes = await _service.GetAllAsync(paginationParams);
             return Ok(recipes);
         }
 
@@ -56,6 +57,20 @@ namespace RecipeFinderAPI.Controllers
                 return NotFound();
 
             return Ok(recipe);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, CreateRecipeDto dto)
+        {
+            await _service.UpdateAsync(id, dto);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _service.DeleteAsync(id);
+            return Ok();
         }
     }
 }
