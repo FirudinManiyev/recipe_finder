@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.Interfaces;
+using RecipeFinderAPI.Interfaces;
+using RecipeFinderAPI.Mappings;
+using RecipeFinderAPI.Services;
 using RecipeFinderAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
