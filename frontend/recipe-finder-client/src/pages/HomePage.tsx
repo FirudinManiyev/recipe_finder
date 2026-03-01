@@ -2,30 +2,57 @@ import { useEffect, useState } from "react";
 import { getRecipes } from "../services/recipeService";
 import type { Recipe } from "../types/recipe";
 import { Link } from "react-router-dom";
+import SearchBar from "../components/SearchBar";
+import { searchRecipes } from "../services/recipeService";
 
 const HomePage = () => {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        const fetchRecipes = async () => {
-            try {
-                const data = await getRecipes();
-                setRecipes(data);
-            } catch (error) {
-                console.error("Xəta baş verdi:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRecipes();
+        loadRecipes(1);
     }, []);
+
+    const loadRecipes = async (pageNumber: number) => {
+        try {
+            setLoading(true);
+            const data = await getRecipes(pageNumber, 6);
+
+            if (pageNumber === 1) {
+                setRecipes(data);
+            } else {
+                setRecipes((prev) => [...prev, ...data]);
+            }
+
+            if (data.length < 6) {
+                setHasMore(false);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSearch = async (data: any) => {
+        try {
+            setLoading(true);
+            const result = await searchRecipes(data);
+            setRecipes(result);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <p className="text-center mt-10">Yüklənir...</p>;
 
     return (
         <div className="container mx-auto p-6">
+            <SearchBar onSearch={handleSearch} />
             <h1 className="text-3xl font-bold mb-6">Reseptlər</h1>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -45,6 +72,12 @@ const HomePage = () => {
                             {recipe.title}
                         </h2>
 
+                        {recipe.matchingScore > 0 && (
+                            <span className="inline-block bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full mt-2">
+                                Uyğunluq: {recipe.matchingScore}
+                            </span>
+                        )}
+
                         <p className="text-gray-500 text-sm mb-2">
                             {recipe.cookingTime} dəq • {recipe.difficulty}
                         </p>
@@ -52,9 +85,35 @@ const HomePage = () => {
                         <p className="text-gray-600 text-sm line-clamp-3">
                             {recipe.description}
                         </p>
+
+                        {recipe.missingIngredients.length > 0 && (
+                            <div className="mt-3">
+                                <p className="text-xs text-red-500 font-semibold">
+                                    Çatışmayan inqrediyentlər:
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    {recipe.missingIngredients.join(", ")}
+                                </p>
+                            </div>
+                        )}
                     </Link>
                 ))}
             </div>
+
+            {hasMore && (
+                <div className="text-center mt-8">
+                    <button
+                        onClick={() => {
+                            const nextPage = page + 1;
+                            setPage(nextPage);
+                            loadRecipes(nextPage);
+                        }}
+                        className="bg-gray-800 text-white px-6 py-2 rounded-lg"
+                    >
+                        Daha çox göstər
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
