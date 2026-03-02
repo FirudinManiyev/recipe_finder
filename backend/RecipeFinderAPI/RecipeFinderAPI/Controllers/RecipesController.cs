@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Helpers;
 using RecipeFinderAPI.Interfaces;
@@ -34,6 +35,7 @@ namespace RecipeFinderAPI.Controllers
             return Ok(recipe);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateRecipeDto dto)
         {

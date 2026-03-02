@@ -12,7 +12,7 @@ namespace RecipeFinderAPI.Services
 
         public JwtService(IConfiguration configuration)
         {
-            _configuration = configuration;
+            _configuration = configuration; 
         }
 
         public string GenerateToken(User user)
