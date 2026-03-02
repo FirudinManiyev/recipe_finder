@@ -39,8 +39,12 @@ const HomePage = () => {
     const handleSearch = async (data: any) => {
         try {
             setLoading(true);
+            setPage(1);          
+            setHasMore(false);   
+
             const result = await searchRecipes(data);
             setRecipes(result);
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -48,7 +52,13 @@ const HomePage = () => {
         }
     };
 
-    if (loading) return <p className="text-center mt-10">Yüklənir...</p>;
+    {
+        loading && (
+            <div className="flex justify-center my-10">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+            </div>
+        )
+    }
 
     return (
         <div className="container mx-auto p-6">
@@ -99,6 +109,14 @@ const HomePage = () => {
                     </Link>
                 ))}
             </div>
+
+            {!loading && recipes.length === 0 && (
+                <div className="text-center mt-10">
+                    <p className="text-gray-500 text-lg">
+                        Heç bir resept tapılmadı 😔
+                    </p>
+                </div>
+            )}
 
             {hasMore && (
                 <div className="text-center mt-8">

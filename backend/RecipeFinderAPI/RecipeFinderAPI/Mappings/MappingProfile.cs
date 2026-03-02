@@ -17,7 +17,10 @@ namespace RecipeFinderAPI.Mappings
             CreateMap<CreateRecipeDto, Recipe>();
 
             CreateMap<Feedback, CreateFeedbackDto>();
+
             CreateMap<CreateFeedbackDto, Feedback>();
+
+            CreateMap<Blog, BlogDto>().ReverseMap();
         }
     }
 }

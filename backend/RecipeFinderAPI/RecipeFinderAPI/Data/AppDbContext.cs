@@ -14,6 +14,8 @@ namespace RecipeFinderAPI.Data
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Blog> Blogs { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
