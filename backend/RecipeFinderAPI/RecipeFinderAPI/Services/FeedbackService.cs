@@ -18,6 +18,7 @@ namespace RecipeFinderAPI.Services
             _mapper = mapper;
         }
 
+        // User feedback göndərir
         public async Task CreateAsync(CreateFeedbackDto dto)
         {
             var feedback = _mapper.Map<Feedback>(dto);
@@ -26,13 +27,26 @@ namespace RecipeFinderAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<CreateFeedbackDto>> GetAllAsync()
+        // Admin bütün feedbackləri görür
+        public async Task<List<FeedbackDto>> GetAllAsync()
         {
             var feedbacks = await _context.Feedbacks
                 .OrderByDescending(f => f.Id)
                 .ToListAsync();
 
-            return _mapper.Map<List<CreateFeedbackDto>>(feedbacks);
+            return _mapper.Map<List<FeedbackDto>>(feedbacks);
+        }
+
+        // Admin feedback silir
+        public async Task DeleteAsync(int id)
+        {
+            var feedback = await _context.Feedbacks.FindAsync(id);
+
+            if (feedback == null)
+                throw new Exception("Feedback tapılmadı");
+
+            _context.Feedbacks.Remove(feedback);
+            await _context.SaveChangesAsync();
         }
     }
 }

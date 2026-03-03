@@ -1,41 +1,54 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeFinderAPI.DTOs;
-using RecipeFinderAPI.Services;
+using RecipeFinderAPI.Interfaces;
 
-namespace RecipeFinderAPI.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class BlogsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BlogsController : ControllerBase
+    private readonly IBlogService _service;
+
+    public BlogsController(IBlogService service)
     {
-        private readonly BlogService _service;
+        _service = service;
+    }
 
-        public BlogsController(BlogService service)
-        {
-            _service = service;
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(await _service.GetAllAsync());
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var blogs = await _service.GetAllAsync();
-            return Ok(blogs);
-        }
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var blog = await _service.GetByIdAsync(id);
+        if (blog == null) return NotFound();
+        return Ok(blog);
+    }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            var blog = await _service.GetByIdAsync(id);
-            if (blog == null) return NotFound();
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateBlogDto dto)
+    {
+        await _service.CreateAsync(dto);
+        return Ok("Blog yaradıldı");
+    }
 
-            return Ok(blog);
-        }
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, CreateBlogDto dto)
+    {
+        await _service.UpdateAsync(id, dto);
+        return Ok("Blog yeniləndi");
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(BlogDto dto)
-        {
-            await _service.CreateAsync(dto);
-            return Ok();
-        }
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _service.DeleteAsync(id);
+        return Ok("Blog silindi");
     }
 }

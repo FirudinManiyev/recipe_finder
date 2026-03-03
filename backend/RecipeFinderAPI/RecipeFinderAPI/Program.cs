@@ -59,7 +59,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
-builder.Services.AddScoped<BlogService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 builder.Services.AddScoped<JwtService>();
 

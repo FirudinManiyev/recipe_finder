@@ -1,45 +1,87 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
+using RecipeFinderAPI.Interfaces;
+using System;
 
-namespace RecipeFinderAPI.Services
+public class BlogService : IBlogService
 {
-    public class BlogService
+    private readonly AppDbContext _context;
+
+    public BlogService(AppDbContext context)
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        _context = context;
+    }
 
-        public BlogService(AppDbContext context, IMapper mapper)
+    public async Task<List<BlogDto>> GetAllAsync()
+    {
+        var blogs = await _context.Blogs
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+
+        return blogs.Select(b => new BlogDto
         {
-            _context = context;
-            _mapper = mapper;
-        }
+            Id = b.Id,
+            Title = b.Title,
+            Content = b.Content,
+            ImageUrl = b.ImageUrl,
+            CreatedAt = b.CreatedAt
+        }).ToList();
+    }
 
-        public async Task<List<BlogDto>> GetAllAsync()
+    public async Task<BlogDto> GetByIdAsync(int id)
+    {
+        var blog = await _context.Blogs.FindAsync(id);
+
+        if (blog == null)
+            return null;
+
+        return new BlogDto
         {
-            var blogs = await _context.Blogs
-                .OrderByDescending(b => b.CreatedDate)
-                .ToListAsync();
+            Id = blog.Id,
+            Title = blog.Title,
+            Content = blog.Content,
+            ImageUrl = blog.ImageUrl,
+            CreatedAt = blog.CreatedAt
+        };
+    }
 
-            return _mapper.Map<List<BlogDto>>(blogs);
-        }
-
-        public async Task<BlogDto?> GetByIdAsync(int id)
+    public async Task CreateAsync(CreateBlogDto dto)
+    {
+        var blog = new Blog
         {
-            var blog = await _context.Blogs.FindAsync(id);
+            Title = dto.Title,
+            Content = dto.Content,
+            ImageUrl = dto.ImageUrl
+        };
 
-            if (blog == null) return null;
+        _context.Blogs.Add(blog);
+        await _context.SaveChangesAsync();
+    }
 
-            return _mapper.Map<BlogDto>(blog);
-        }
+    public async Task UpdateAsync(int id, CreateBlogDto dto)
+    {
+        var blog = await _context.Blogs.FindAsync(id);
 
-        public async Task CreateAsync(BlogDto dto)
-        {
-            var blog = _mapper.Map<Blog>(dto);
-            _context.Blogs.Add(blog);
-            await _context.SaveChangesAsync();
-        }
+        if (blog == null)
+            throw new Exception("Blog tapılmadı");
+
+        blog.Title = dto.Title;
+        blog.Content = dto.Content;
+        blog.ImageUrl = dto.ImageUrl;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var blog = await _context.Blogs.FindAsync(id);
+
+        if (blog == null)
+            throw new Exception("Blog tapılmadı");
+
+        _context.Blogs.Remove(blog);
+        await _context.SaveChangesAsync();
     }
 }

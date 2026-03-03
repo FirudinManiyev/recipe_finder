@@ -6,6 +6,6 @@
         public string Title { get; set; } = null!;
         public string ImageUrl { get; set; } = null!;
         public string Content { get; set; } = null!;
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
