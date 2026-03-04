@@ -5,4 +5,5 @@ export interface Recipe {
     cookingTime: number;
     difficulty: string;
     imageUrl: string;
+    ingredients: string[];
 }
