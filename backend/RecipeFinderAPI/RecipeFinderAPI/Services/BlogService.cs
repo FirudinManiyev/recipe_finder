@@ -2,6 +2,7 @@
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
+using RecipeFinderAPI.Exceptions;
 using RecipeFinderAPI.Interfaces;
 using System;
 
@@ -35,7 +36,7 @@ public class BlogService : IBlogService
         var blog = await _context.Blogs.FindAsync(id);
 
         if (blog == null)
-            return null;
+            throw new NotFoundException("Blog tapılmadı");
 
         return new BlogDto
         {
@@ -65,7 +66,7 @@ public class BlogService : IBlogService
         var blog = await _context.Blogs.FindAsync(id);
 
         if (blog == null)
-            throw new Exception("Blog tapılmadı");
+            throw new NotFoundException("Blog tapılmadı");
 
         blog.Title = dto.Title;
         blog.Content = dto.Content;
@@ -79,7 +80,7 @@ public class BlogService : IBlogService
         var blog = await _context.Blogs.FindAsync(id);
 
         if (blog == null)
-            throw new Exception("Blog tapılmadı");
+            throw new NotFoundException("Blog tapılmadı");
 
         _context.Blogs.Remove(blog);
         await _context.SaveChangesAsync();

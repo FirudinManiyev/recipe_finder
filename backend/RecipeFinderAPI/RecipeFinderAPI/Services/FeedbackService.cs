@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
+using RecipeFinderAPI.Exceptions;
 using RecipeFinderAPI.Interfaces;
 
 namespace RecipeFinderAPI.Services
@@ -43,7 +44,7 @@ namespace RecipeFinderAPI.Services
             var feedback = await _context.Feedbacks.FindAsync(id);
 
             if (feedback == null)
-                throw new Exception("Feedback tapılmadı");
+                throw new NotFoundException("Feedback tapılmadı");
 
             _context.Feedbacks.Remove(feedback);
             await _context.SaveChangesAsync();

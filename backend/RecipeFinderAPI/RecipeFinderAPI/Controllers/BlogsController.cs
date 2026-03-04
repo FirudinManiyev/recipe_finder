@@ -24,7 +24,6 @@ public class BlogsController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var blog = await _service.GetByIdAsync(id);
-        if (blog == null) return NotFound();
         return Ok(blog);
     }
 

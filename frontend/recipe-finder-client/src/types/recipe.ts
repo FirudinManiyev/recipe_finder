@@ -5,7 +5,4 @@ export interface Recipe {
     cookingTime: number;
     difficulty: string;
     imageUrl: string;
-    ingredients: string[];
-    matchingScore: number;
-    missingIngredients: string[];
 }

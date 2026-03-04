@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
+using RecipeFinderAPI.Exceptions;
 using RecipeFinderAPI.Helpers;
 using RecipeFinderAPI.Interfaces;
 
@@ -40,7 +41,7 @@ namespace RecipeFinderAPI.Services
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
-                return null;
+                throw new NotFoundException("Resept tapılmadı");
 
             return _mapper.Map<RecipeDto>(recipe);
         }
@@ -147,7 +148,7 @@ namespace RecipeFinderAPI.Services
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
-                throw new Exception("Resept tapılmadı");
+                throw new NotFoundException("Resept tapılmadı");
 
             _mapper.Map(dto, recipe);
 
@@ -179,7 +180,7 @@ namespace RecipeFinderAPI.Services
             var recipe = await _context.Recipes.FindAsync(id);
 
             if (recipe == null)
-                throw new Exception("Resept tapılmadı");
+                throw new NotFoundException("Resept tapılmadı");
 
             _context.Recipes.Remove(recipe);
             await _context.SaveChangesAsync();

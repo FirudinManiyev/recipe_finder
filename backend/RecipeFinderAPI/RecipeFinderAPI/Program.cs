@@ -5,6 +5,7 @@ using RecipeFinderAPI.Data;
 using RecipeFinderAPI.Interfaces;
 using RecipeFinderAPI.Interfaces;
 using RecipeFinderAPI.Mappings;
+using RecipeFinderAPI.Middleware;
 using RecipeFinderAPI.Services;
 using RecipeFinderAPI.Services;
 using System.Security.Claims;
@@ -109,11 +110,15 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<NotFoundMiddleware>();
 
 app.Run();
