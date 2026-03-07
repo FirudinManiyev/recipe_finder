@@ -50,6 +50,7 @@ export default function CreateBlogPage() {
                     name="title"
                     placeholder="Title"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -57,6 +58,7 @@ export default function CreateBlogPage() {
                     name="content"
                     placeholder="Content"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -64,6 +66,7 @@ export default function CreateBlogPage() {
                     name="imageUrl"
                     placeholder="Image url"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 

@@ -16,43 +16,21 @@ export default function CreateRecipePage() {
         ingredients: ""
     })
 
-    const [uploading, setUploading] = useState(false)
+    const difficulties = [
+        "Çox asan",
+        "Asan",
+        "Orta",
+        "Çətin",
+        "Çox çətin"
+    ]
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
         setForm({
             ...form,
             [e.target.name]: e.target.value
         })
-    }
-
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        const formData = new FormData()
-        formData.append("file", file)
-
-        try {
-
-            setUploading(true)
-
-            const res = await api.post("/upload", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            })
-
-            setForm({
-                ...form,
-                imageUrl: res.data.imageUrl
-            })
-
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setUploading(false)
-        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -94,6 +72,7 @@ export default function CreateRecipePage() {
                     name="title"
                     placeholder="Title"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -101,6 +80,7 @@ export default function CreateRecipePage() {
                     name="description"
                     placeholder="Description"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -108,6 +88,7 @@ export default function CreateRecipePage() {
                     name="instructions"
                     placeholder="Instructions"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -116,48 +97,40 @@ export default function CreateRecipePage() {
                     type="number"
                     placeholder="Cooking Time"
                     onChange={handleChange}
+                    min="1"
+                    required
                     className="w-full border p-2"
                 />
+
+                <select
+                    name="difficulty"
+                    value={form.difficulty}
+                    onChange={handleChange}
+                    required
+                    className="w-full border p-2"
+                >
+                    <option value="">Çətinlik seç</option>
+
+                    {difficulties.map((d, i) => (
+                        <option key={i} value={d}>
+                            {d}
+                        </option>
+                    ))}
+                </select>
 
                 <input
-                    name="difficulty"
-                    placeholder="Difficulty"
+                    name="imageUrl"
+                    placeholder="Image url (məs: images/pasta.jpg)"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
-
-                {/* Image Upload */}
-
-                <div>
-                    <label className="block mb-2 font-medium">
-                        Şəkil Yüklə
-                    </label>
-
-                    <input
-                        type="file"
-                        onChange={handleImageUpload}
-                        className="w-full"
-                    />
-
-                    {uploading && (
-                        <p className="text-sm text-gray-500 mt-1">
-                            Upload olunur...
-                        </p>
-                    )}
-
-                    {form.imageUrl && (
-                        <img
-                            src={`https://localhost:5001${form.imageUrl}`}
-                            alt="preview"
-                            className="mt-3 w-40 rounded"
-                        />
-                    )}
-                </div>
 
                 <input
                     name="ingredients"
                     placeholder="Ingredients (vergül ilə)"
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 

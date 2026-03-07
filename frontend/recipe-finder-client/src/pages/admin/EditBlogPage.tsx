@@ -63,6 +63,7 @@ export default function EditBlogPage() {
                     name="title"
                     value={form.title}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -70,6 +71,7 @@ export default function EditBlogPage() {
                     name="content"
                     value={form.content}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -77,6 +79,7 @@ export default function EditBlogPage() {
                     name="imageUrl"
                     value={form.imageUrl}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 

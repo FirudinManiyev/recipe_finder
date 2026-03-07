@@ -20,6 +20,8 @@ export default function AdminLayout() {
                 </h2>
 
                 <nav className="space-y-2">
+                    
+                    <Link to="/admin/dashboard" className="block">Dashboard</Link>
 
                     <Link to="/admin/recipes" className="block">
                         Reseptlər
@@ -42,7 +44,11 @@ export default function AdminLayout() {
 
                 </nav>
 
+                
+
             </aside>
+
+            
 
             <main className="flex-1 p-8 bg-gray-100">
 

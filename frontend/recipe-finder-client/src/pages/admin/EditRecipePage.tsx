@@ -17,6 +17,14 @@ export default function EditRecipePage() {
         ingredients: ""
     })
 
+    const difficulties = [
+        "Çox asan",
+        "Asan",
+        "Orta",
+        "Çətin",
+        "Çox çətin"
+    ]
+
     useEffect(() => {
         getRecipe()
     }, [])
@@ -89,6 +97,7 @@ export default function EditRecipePage() {
                     name="title"
                     value={form.title}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -96,6 +105,7 @@ export default function EditRecipePage() {
                     name="description"
                     value={form.description}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -103,6 +113,7 @@ export default function EditRecipePage() {
                     name="instructions"
                     value={form.instructions}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -111,20 +122,32 @@ export default function EditRecipePage() {
                     type="number"
                     value={form.cookingTime}
                     onChange={handleChange}
+                    min="1"
+                    required
                     className="w-full border p-2"
                 />
 
-                <input
+                <select
                     name="difficulty"
                     value={form.difficulty}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
-                />
+                >
+                    <option value="">Çətinlik seç</option>
+
+                    {difficulties.map((d, i) => (
+                        <option key={i} value={d}>
+                            {d}
+                        </option>
+                    ))}
+                </select>
 
                 <input
                     name="imageUrl"
                     value={form.imageUrl}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 
@@ -132,6 +155,7 @@ export default function EditRecipePage() {
                     name="ingredients"
                     value={form.ingredients}
                     onChange={handleChange}
+                    required
                     className="w-full border p-2"
                 />
 

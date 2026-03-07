@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Helpers;
 using RecipeFinderAPI.Interfaces;
+using RecipeFinderAPI.Services;
 
 namespace RecipeFinderAPI.Controllers
 {
@@ -11,10 +14,12 @@ namespace RecipeFinderAPI.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly IRecipeService _service;
+        private readonly AppDbContext _context;
 
-        public RecipesController(IRecipeService service)
+        public RecipesController(IRecipeService service, AppDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         [HttpGet]
@@ -73,6 +78,13 @@ namespace RecipeFinderAPI.Controllers
         {
             await _service.DeleteAsync(id);
             return Ok();
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetRecipeCount()
+        {
+            var count = await _context.Recipes.CountAsync();
+            return Ok(count);
         }
     }
 }

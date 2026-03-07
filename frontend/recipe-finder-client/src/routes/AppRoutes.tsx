@@ -18,6 +18,7 @@ import CreateRecipePage from "../pages/admin/CreateRecipePage";
 import EditRecipePage from "../pages/admin/EditRecipePage";
 import CreateBlogPage from "../pages/admin/CreateBlogPage";
 import EditBlogPage from "../pages/admin/EditBlogPage";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 
 
 export default function AppRoutes() {
@@ -49,6 +50,7 @@ export default function AppRoutes() {
           <Route path="recipes/edit/:id" element={<EditRecipePage />} />
           <Route path="blogs/create" element={<CreateBlogPage />} />
           <Route path="blogs/edit/:id" element={<EditBlogPage />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Routes>
     </Layout>
