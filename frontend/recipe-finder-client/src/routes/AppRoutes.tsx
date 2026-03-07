@@ -14,6 +14,10 @@ import AdminRecipesPage from "../pages/admin/AdminRecipesPage";
 import AdminBlogsPage from "../pages/admin/AdminBlogsPage";
 import AdminFeedbackPage from "../pages/admin/AdminFeedbackPage";
 import LoginPage from "../pages/LoginPage";
+import CreateRecipePage from "../pages/admin/CreateRecipePage";
+import EditRecipePage from "../pages/admin/EditRecipePage";
+import CreateBlogPage from "../pages/admin/CreateBlogPage";
+import EditBlogPage from "../pages/admin/EditBlogPage";
 
 
 export default function AppRoutes() {
@@ -41,6 +45,10 @@ export default function AppRoutes() {
           <Route path="recipes" element={<AdminRecipesPage />} />
           <Route path="blogs" element={<AdminBlogsPage />} />
           <Route path="feedbacks" element={<AdminFeedbackPage />} />
+          <Route path="recipes/create" element={<CreateRecipePage />} />
+          <Route path="recipes/edit/:id" element={<EditRecipePage />} />
+          <Route path="blogs/create" element={<CreateBlogPage />} />
+          <Route path="blogs/edit/:id" element={<EditBlogPage />} />
         </Route>
       </Routes>
     </Layout>

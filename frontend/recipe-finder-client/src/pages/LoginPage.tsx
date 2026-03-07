@@ -28,6 +28,8 @@ export default function LoginPage() {
                 Password: form.password
             })
 
+            console.log(res.data)
+
             const token = res.data.token
 
             localStorage.setItem("token", token)
@@ -79,5 +81,7 @@ export default function LoginPage() {
             </form>
 
         </div>
+
+        
     )
 }

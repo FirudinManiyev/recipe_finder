@@ -1,6 +1,14 @@
 import { Link, Outlet } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export default function AdminLayout() {
+
+    const navigate = useNavigate()
+
+    const handleLogout = () => {
+        localStorage.removeItem("token")
+        navigate("/login")
+    }
 
     return (
         <div className="flex min-h-screen">
@@ -24,6 +32,13 @@ export default function AdminLayout() {
                     <Link to="/admin/feedbacks" className="block">
                         Feedback
                     </Link>
+
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 px-3 py-2 rounded mt-6"
+                    >
+                        Logout
+                    </button>
 
                 </nav>
 
