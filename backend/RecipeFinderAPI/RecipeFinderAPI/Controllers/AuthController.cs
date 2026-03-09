@@ -55,7 +55,12 @@ namespace RecipeFinderAPI.Controllers
 
             var token = _jwtService.GenerateToken(user);
 
-            return Ok(new { token });
+            return Ok(new
+            {
+                token = token,
+                role = user.Role,
+                username = user.Username
+            });
         }
     }
 }

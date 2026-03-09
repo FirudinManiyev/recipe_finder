@@ -8,7 +8,6 @@ import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import Layout from "../components/layout/Layout";
-import ProtectedRoute from "../components/ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
 import AdminRecipesPage from "../pages/admin/AdminRecipesPage";
 import AdminBlogsPage from "../pages/admin/AdminBlogsPage";
@@ -19,6 +18,8 @@ import EditRecipePage from "../pages/admin/EditRecipePage";
 import CreateBlogPage from "../pages/admin/CreateBlogPage";
 import EditBlogPage from "../pages/admin/EditBlogPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
+import AdminRoute from "../components/AdminRoute";
+import RegisterPage from "../pages/RegisterPage";
 
 
 export default function AppRoutes() {
@@ -34,13 +35,14 @@ export default function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AdminLayout />
-            </ProtectedRoute>
+            </AdminRoute>
           }
         >
           <Route path="recipes" element={<AdminRecipesPage />} />

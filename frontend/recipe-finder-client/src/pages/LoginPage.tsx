@@ -32,7 +32,9 @@ export default function LoginPage() {
 
             const token = res.data.token
 
-            localStorage.setItem("token", token)
+            sessionStorage.setItem("token", res.data.token)
+            sessionStorage.setItem("role", res.data.role)
+            sessionStorage.setItem("username", res.data.username)
 
             navigate("/admin/recipes")
 
@@ -82,6 +84,6 @@ export default function LoginPage() {
 
         </div>
 
-        
+
     )
 }
