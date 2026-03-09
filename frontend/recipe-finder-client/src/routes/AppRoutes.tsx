@@ -20,6 +20,7 @@ import EditBlogPage from "../pages/admin/EditBlogPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import AdminRoute from "../components/AdminRoute";
 import RegisterPage from "../pages/RegisterPage";
+import UnauthorizedPage from "../pages/UnauthorizedPage";
 
 
 export default function AppRoutes() {
@@ -36,6 +37,7 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         <Route
           path="/admin"
