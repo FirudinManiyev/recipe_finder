@@ -36,29 +36,50 @@ export default function AdminFeedbackPage() {
     }
 
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-6">Feedback mesajları</h1>
+        <div className="p-4 md:p-6">
+
+            <h1 className="text-3xl font-bold text-gray-800 mb-8">
+                Feedback mesajları
+            </h1>
 
             <div className="space-y-4">
+
                 {feedbacks.map(f => (
+
                     <div
                         key={f.id}
-                        className="bg-white p-4 rounded shadow flex justify-between items-center"
+                        className="bg-white/90 backdrop-blur p-5 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
-                        <div>
-                            <h2 className="font-semibold">{f.fullName}</h2>
-                            <p className="text-gray-500 text-sm">{f.email}</p>
-                            <p className="text-gray-700 mt-2">{f.message}</p>
+
+                        <div className="flex-1">
+
+                            <h2 className="font-semibold text-lg text-gray-800">
+                                {f.fullName}
+                            </h2>
+
+                            <p className="text-sm text-gray-500 mt-1">
+                                {f.email}
+                            </p>
+
+                            <p className="text-gray-700 mt-3 leading-relaxed">
+                                {f.message}
+                            </p>
+
                         </div>
+
                         <button
                             onClick={() => handleDelete(f.id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition-all duration-300 self-start md:self-center"
                         >
                             Delete
                         </button>
+
                     </div>
+
                 ))}
+
             </div>
+
         </div>
     )
 }

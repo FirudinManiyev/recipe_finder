@@ -39,17 +39,17 @@ export default function AdminBlogsPage() {
     }
 
     return (
-        <div>
+        <div className="p-4 md:p-6">
 
-            <div className="flex justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-3xl font-bold text-gray-800">
                     Blogları idarə et
                 </h1>
 
                 <button
                     onClick={() => navigate("/admin/blogs/create")}
-                    className="bg-green-600 text-white px-4 py-2 rounded"
+                    className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:scale-105 transition-all duration-300"
                 >
                     + Yeni Blog
                 </button>
@@ -62,33 +62,33 @@ export default function AdminBlogsPage() {
 
                     <div
                         key={blog.id}
-                        className="bg-white p-4 rounded shadow flex justify-between items-center"
+                        className="bg-white/90 backdrop-blur p-5 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
 
                         <div>
 
-                            <h2 className="font-semibold">
+                            <h2 className="font-semibold text-lg text-gray-800">
                                 {blog.title}
                             </h2>
 
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-gray-500 text-sm mt-1">
                                 {new Date(blog.createdAt).toLocaleDateString()}
                             </p>
 
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
 
                             <button
                                 onClick={() => navigate(`/admin/blogs/edit/${blog.id}`)}
-                                className="bg-blue-500 text-white px-3 py-1 rounded"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm shadow hover:scale-105 transition-all duration-300"
                             >
                                 Edit
                             </button>
 
                             <button
                                 onClick={() => handleDelete(blog.id)}
-                                className="bg-red-500 text-white px-3 py-1 rounded"
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm shadow hover:scale-105 transition-all duration-300"
                             >
                                 Delete
                             </button>

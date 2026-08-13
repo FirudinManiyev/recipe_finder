@@ -4,11 +4,11 @@ import type { Recipe } from "../types/recipe";
 export const getRecipes = async (
     pageNumber: number = 1,
     pageSize: number = 6
-) => {
+): Promise<Recipe[]> => {
     const response = await api.get(
         `/recipes?pageNumber=${pageNumber}&pageSize=${pageSize}`
     );
-    return response.data;
+    return Array.isArray(response.data) ? response.data : [];
 };
 
 export const getRecipeById = async (id: number): Promise<Recipe> => {
@@ -21,8 +21,22 @@ export const searchRecipes = async (data: {
     maxCookingTime?: number;
     difficulty?: string;
     sortBy?: string;
-}) => {
+}): Promise<Recipe[]> => {
     const response = await api.post("/recipes/search", data);
-    return response.data;
+    return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getRandomRecipe = async (): Promise<Recipe | null> => {
+    try {
+        const response = await api.get("/recipes/random");
+        return response.data as Recipe;
+    } catch {
+        return null;
+    }
+};
+
+export const getRecipeCount = async (): Promise<number> => {
+    const response = await api.get("/recipes/count");
+    return Number(response.data) || 0;
 };
 
