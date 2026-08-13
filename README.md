@@ -87,3 +87,7 @@ docs/superpowers/            dizayn və icra planı
 ## Auth axını
 
 Login cavabı tokeni body-də qaytarmır. Server cookie yaradır, frontend isə refresh zamanı `/api/auth/me` sorğusu ilə sessiyanı bərpa edir. Sessiya bitdikdə ilk gözlənilməyən `401` həssas state-i təmizləyir və istifadəçini bir dəfə login səhifəsinə yönləndirir. Logout tarixçədəki qorunan səhifələrin yenidən açılmasına imkan vermir.
+
+## Müəllif
+
+Firudin Maniyev
