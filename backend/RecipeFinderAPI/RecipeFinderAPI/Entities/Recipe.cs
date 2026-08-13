@@ -8,21 +8,21 @@ namespace RecipeFinderAPI.Entities
 
         [Required]
         [MaxLength(150)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [MaxLength(1000)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string Instructions { get; set; }
+        public string Instructions { get; set; } = string.Empty;
 
         public int CookingTime { get; set; } // dəqiqə ilə
 
-        public string Difficulty { get; set; } // Easy, Medium, Hard
+        public string Difficulty { get; set; } = string.Empty; // Easy, Medium, Hard
 
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public ICollection<RecipeIngredient> RecipeIngredients { get; set; }
+        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = [];
     }
 }

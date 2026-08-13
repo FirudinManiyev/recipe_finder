@@ -1,106 +1,95 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import api from "../../api/axios"
-import type { Recipe } from "../../types/recipe"
+import { useEffect, useState } from 'react'
+import { Clock3, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import api from '../../shared/api/client'
+import { removeOptimistically, restoreAtIndex } from '../../shared/lib/optimisticList'
+import { toApiProblem } from '../../shared/api/errors'
+import type { Recipe } from '../../types/recipe'
 
 export default function AdminRecipesPage() {
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pendingIds, setPendingIds] = useState<Set<number>>(new Set())
+  const navigate = useNavigate()
 
-    const [recipes, setRecipes] = useState<Recipe[]>([])
+  useEffect(() => {
+    const controller = new AbortController()
+    api.get<Recipe[]>('/recipes?pageNumber=1&pageSize=100', { signal: controller.signal })
+      .then((response) => setRecipes(response.data))
+      .catch((requestError: unknown) => {
+        if (!controller.signal.aborted) setError(toApiProblem(requestError).message)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
+  }, [])
 
-    const navigate = useNavigate()
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Resepti silmək istəyirsiniz?') || pendingIds.has(id)) return
+    const snapshot = removeOptimistically(recipes, id)
+    if (!snapshot.removed) return
 
-    const getRecipes = async () => {
-        try {
-            const res = await api.get("/recipes?pageNumber=1&pageSize=100")
-            setRecipes(res.data)
-        } catch (error) {
-            console.log(error)
-        }
+    setRecipes(snapshot.next)
+    setPendingIds((current) => new Set(current).add(id))
+    try {
+      await api.delete(`/recipes/${id}`)
+      toast.success('Resept silindi')
+    } catch (requestError: unknown) {
+      setRecipes((current) => restoreAtIndex(current, snapshot.removed!, snapshot.index))
+      toast.error(toApiProblem(requestError).message)
+    } finally {
+      setPendingIds((current) => {
+        const next = new Set(current)
+        next.delete(id)
+        return next
+      })
     }
+  }
 
-    useEffect(() => {
-        getRecipes()
-    }, [])
-
-    const handleDelete = async (id: number) => {
-
-        if (!confirm("Resepti silmək istəyirsən?")) return
-
-        try {
-
-            await api.delete(`/recipes/${id}`)
-
-            setRecipes(recipes.filter(r => r.id !== id))
-
-        } catch (error) {
-            console.log(error)
-        }
-
-    }
-
-    return (
-        <div className="p-4 md:p-6">
-
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-
-                <h1 className="text-3xl font-bold text-gray-800">
-                    Reseptləri idarə et
-                </h1>
-
-                <button
-                    onClick={() => navigate("/admin/recipes/create")}
-                    className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:scale-105 transition-all duration-300"
-                >
-                    + Yeni resept
-                </button>
-
-            </div>
-
-            <div className="space-y-4">
-
-                {recipes.map(recipe => (
-
-                    <div
-                        key={recipe.id}
-                        className="bg-white/90 backdrop-blur p-5 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-                    >
-
-                        <div>
-
-                            <h2 className="font-semibold text-lg text-gray-800">
-                                {recipe.title}
-                            </h2>
-
-                            <p className="text-sm text-gray-500 mt-1">
-                                {recipe.cookingTime} dəqiqə
-                            </p>
-
-                        </div>
-
-                        <div className="flex gap-3">
-
-                            <button
-                                onClick={() => navigate(`/admin/recipes/edit/${recipe.id}`)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm shadow hover:scale-105 transition-all duration-300"
-                            >
-                                Edit
-                            </button>
-
-                            <button
-                                onClick={() => handleDelete(recipe.id)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm shadow hover:scale-105 transition-all duration-300"
-                            >
-                                Delete
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                ))}
-
-            </div>
-
+  return (
+    <section className="mx-auto w-full max-w-6xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">İdarəetmə</p>
+          <h1 className="mt-1 text-3xl font-black text-slate-900">Reseptlər</h1>
         </div>
-    )
+        <button type="button" onClick={() => navigate('/admin/recipes/create')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 font-bold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700">
+          <Plus size={18} /> Yeni resept
+        </button>
+      </div>
+
+      {loading && <AdminListSkeleton />}
+      {error && <AdminError message={error} />}
+      {!loading && !error && recipes.length === 0 && <AdminEmpty text="Hələ resept əlavə edilməyib." />}
+      <div className="grid gap-4">
+        {recipes.map((recipe) => (
+          <article key={recipe.id} className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-bold text-slate-900">{recipe.title}</h2>
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500"><Clock3 size={15} /> {recipe.cookingTime} dəqiqə · {recipe.difficulty}</p>
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => navigate(`/admin/recipes/edit/${recipe.id}`)} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-sky-50 px-4 font-semibold text-sky-700 transition hover:bg-sky-100 sm:flex-none"><Pencil size={16} /> Redaktə</button>
+              <button type="button" disabled={pendingIds.has(recipe.id)} onClick={() => void handleDelete(recipe.id)} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-50 px-4 font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-50 sm:flex-none"><Trash2 size={16} /> Sil</button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AdminListSkeleton() {
+  return <div role="status" aria-label="Məlumatlar yüklənir" className="space-y-4">{[1, 2, 3].map((item) => <div key={item} className="h-24 animate-pulse rounded-2xl bg-slate-200" />)}</div>
+}
+
+function AdminError({ message }: { message: string }) {
+  return <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">{message}</div>
+}
+
+function AdminEmpty({ text }: { text: string }) {
+  return <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">{text}</div>
 }

@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useLocation, useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import api from "../api/axios"
 import { Eye, EyeOff, Sparkles, CheckCircle, AlertCircle, Loader } from "lucide-react"
 import toast from "react-hot-toast"
+import { useAuth } from "../features/auth/useAuth"
+import { toApiProblem } from "../shared/api/errors"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,6 +28,8 @@ const itemVariants = {
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
@@ -55,9 +58,15 @@ export default function LoginPage() {
     const newErrors: { username?: string; password?: string } = {}
     if (!form.username.trim()) {
       newErrors.username = "Username tələb olunur"
+    } else if (form.username.length < 3 || form.username.length > 50) {
+      newErrors.username = "Username 3–50 simvol aralığında olmalıdır"
     }
     if (!form.password.trim()) {
-      newErrors.password = "Password tələb olunur"
+      newErrors.password = "Şifrə tələb olunur"
+    } else if (form.password.length < 8) {
+      newErrors.password = "Şifrə ən azı 8 simvol olmalıdır"
+    } else if (form.password.length > 128) {
+      newErrors.password = "Şifrə ən çox 128 simvol ola bilər"
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -71,24 +80,17 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await api.post("/auth/login", {
-        Username: form.username,
-        Password: form.password,
+      const user = await login({
+        username: form.username.trim(),
+        password: form.password,
       })
-
-      sessionStorage.setItem("token", res.data.token)
-      sessionStorage.setItem("role", res.data.role)
-      sessionStorage.setItem("username", res.data.username)
 
       toast.success("Uğurla login oldunuz ✨")
 
-      if (res.data.role === "Admin") {
-        navigate("/admin/dashboard")
-      } else {
-        navigate("/")
-      }
-    } catch (error) {
-      toast.error("Username və ya password səhvdir")
+      const intendedPath = (location.state as { from?: string } | null)?.from
+      navigate(intendedPath ?? (user.role === "Admin" ? "/admin/dashboard" : "/"), { replace: true })
+    } catch (error: unknown) {
+      toast.error(toApiProblem(error).message)
     } finally {
       setIsLoading(false)
     }
@@ -169,6 +171,9 @@ export default function LoginPage() {
                   placeholder="Username"
                   value={form.username}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  autoComplete="username"
                   className={`w-full px-5 py-3 rounded-2xl border-2 transition-all duration-300 focus:outline-none text-gray-800 placeholder-gray-400 bg-white/50 backdrop-blur ${
                     errors.username
                       ? "border-red-400 focus:ring-2 focus:ring-red-200"
@@ -196,6 +201,9 @@ export default function LoginPage() {
                   placeholder="Password"
                   value={form.password}
                   onChange={handleChange}
+                  minLength={8}
+                  maxLength={128}
+                  autoComplete="current-password"
                   className={`w-full px-5 py-3 pr-12 rounded-2xl border-2 transition-all duration-300 focus:outline-none text-gray-800 placeholder-gray-400 bg-white/50 backdrop-blur ${
                     errors.password
                       ? "border-red-400 focus:ring-2 focus:ring-red-200"

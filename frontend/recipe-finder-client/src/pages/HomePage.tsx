@@ -15,17 +15,13 @@ import {
   Soup,
   Users,
 } from "lucide-react";
-import api from "../api/axios";
-import { getRecipes } from "../services/recipeService";
+import api from "../shared/api/client";
+import { safeImageUrl } from "../shared/lib/safeImageUrl";
+import { getRecipes } from "../features/recipes/recipeApi";
 import type { Blog } from "../types/blog";
 import type { Recipe } from "../types/recipe";
 import ContactPage from "./ContactPage";
 
-const imagePath = (value: string) => {
-  if (!value) return "/images/placeholder.jpg";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  return `/${value.replace(/^\/+/, "")}`;
-};
 
 const difficultyClass = (difficulty: string) => {
   const normalized = difficulty
@@ -311,7 +307,7 @@ export default function HomePage() {
             <div className="grid lg:grid-cols-2">
               <div className="relative h-72 overflow-hidden md:h-80 lg:h-full">
                 <img
-                  src={imagePath(featuredRecipe.imageUrl)}
+                  src={safeImageUrl(featuredRecipe.imageUrl)}
                   alt={featuredRecipe.title}
                   className="h-full w-full object-cover transition duration-700 hover:scale-105"
                 />
@@ -371,7 +367,7 @@ export default function HomePage() {
                   >
                     <div className="relative h-52 overflow-hidden">
                       <img
-                        src={imagePath(recipe.imageUrl)}
+                        src={safeImageUrl(recipe.imageUrl)}
                         alt={recipe.title}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
@@ -434,7 +430,7 @@ export default function HomePage() {
                   >
                     <div className="relative h-52 overflow-hidden">
                       <img
-                        src={imagePath(blog.imageUrl)}
+                        src={safeImageUrl(blog.imageUrl)}
                         alt={blog.title}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />

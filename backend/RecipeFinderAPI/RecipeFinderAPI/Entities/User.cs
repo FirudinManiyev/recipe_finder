@@ -1,11 +1,20 @@
-﻿namespace RecipeFinderAPI.Entities
+using System.ComponentModel.DataAnnotations;
+
+namespace RecipeFinderAPI.Entities;
+
+public class User
 {
-    public class User
-    {
-        public int Id { get; set; }
-        public string Username { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string PasswordHash { get; set; } = null!;
-        public string Role { get; set; } = "User"; //default
-    }
+    public int Id { get; set; }
+
+    [Required, MaxLength(50)]
+    public string Username { get; set; } = string.Empty;
+
+    [Required, MaxLength(150)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, MaxLength(512)]
+    public string PasswordHash { get; set; } = string.Empty;
+
+    [Required, MaxLength(20)]
+    public string Role { get; set; } = "User";
 }

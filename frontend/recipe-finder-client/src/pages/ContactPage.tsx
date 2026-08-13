@@ -1,5 +1,6 @@
 import { useState } from "react"
-import api from "../api/axios"
+import api from "../shared/api/client"
+import { toApiProblem } from "../shared/api/errors"
 import { Mail, Phone, Instagram, Github, Linkedin, MapPin, CheckCircle, AlertCircle, Loader } from "lucide-react"
 import { motion } from "framer-motion"
 import toast from "react-hot-toast"
@@ -19,12 +20,15 @@ export default function ContactPage() {
     const newErrors: typeof errors = {}
     
     if (!form.fullName.trim()) newErrors.fullName = "Ad soyad tələb olunur"
+    else if (form.fullName.trim().length < 2 || form.fullName.length > 100) newErrors.fullName = "Ad soyad 2–100 simvol aralığında olmalıdır"
     if (!form.email.trim()) newErrors.email = "Email tələb olunur"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "E-mail düzgün deyil"
     }
+    else if (form.email.length > 150) newErrors.email = "E-mail ən çox 150 simvol ola bilər"
     if (!form.message.trim()) newErrors.message = "Mesaj tələb olunur"
     else if (form.message.trim().length < 10) newErrors.message = "Mesaj ən azı 10 simvol olmalıdır"
+    else if (form.message.length > 1000) newErrors.message = "Mesaj ən çox 1000 simvol ola bilər"
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -53,9 +57,9 @@ export default function ContactPage() {
 
     try {
       await api.post("/feedback", {
-        FullName: form.fullName,
-        Email: form.email,
-        Message: form.message
+        FullName: form.fullName.trim(),
+        Email: form.email.trim().toLowerCase(),
+        Message: form.message.trim()
       })
 
       setSuccess(true)
@@ -70,9 +74,8 @@ export default function ContactPage() {
       setTimeout(() => {
         setSuccess(false)
       }, 4000)
-    } catch (error: any) {
-      toast.error("Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.")
-      console.log(error)
+    } catch (error: unknown) {
+      toast.error(toApiProblem(error).message)
     } finally {
       setLoading(false)
     }
@@ -308,6 +311,9 @@ export default function ContactPage() {
                   placeholder="Sizin adınız"
                   value={form.fullName}
                   onChange={handleChange}
+                  minLength={2}
+                  maxLength={100}
+                  autoComplete="name"
                   className={`w-full px-4 md:px-5 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none
                     ${errors.fullName 
                       ? "border-red-400 bg-red-50" 
@@ -334,6 +340,8 @@ export default function ContactPage() {
                   placeholder="sizin@email.com"
                   value={form.email}
                   onChange={handleChange}
+                  maxLength={150}
+                  autoComplete="email"
                   className={`w-full px-4 md:px-5 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none
                     ${errors.email 
                       ? "border-red-400 bg-red-50" 
@@ -359,6 +367,8 @@ export default function ContactPage() {
                   placeholder="Bizimlə paylaşmak istədiyiniz hər şeyi yazın..."
                   value={form.message}
                   onChange={handleChange}
+                  minLength={10}
+                  maxLength={1000}
                   rows={5}
                   className={`w-full px-4 md:px-5 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none resize-none
                     ${errors.message 

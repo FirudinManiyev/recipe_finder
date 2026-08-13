@@ -3,14 +3,14 @@
     public class RecipeDto
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Instructions { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Instructions { get; set; } = string.Empty;
         public int CookingTime { get; set; }
-        public string Difficulty { get; set; }
-        public string ImageUrl { get; set; }
-        public List<string> Ingredients { get; set; }
+        public string Difficulty { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+        public List<string> Ingredients { get; set; } = [];
         public int MatchingScore { get; set; }
-        public List<string> MissingIngredients { get; set; } = new();
+        public List<string> MissingIngredients { get; set; } = [];
     }
 }

@@ -9,7 +9,8 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import api from "../api/axios";
+import api from "../shared/api/client";
+import { safeImageUrl } from "../shared/lib/safeImageUrl";
 import type { Blog } from "../types/blog";
 
 const PAGE_SIZE = 6;
@@ -254,7 +255,7 @@ export default function BlogPage() {
             <div className="grid lg:grid-cols-2">
               <div className="relative h-72 overflow-hidden md:h-80 lg:h-full">
                 <img
-                  src={`/${featured.imageUrl}`}
+                  src={safeImageUrl(featured.imageUrl)}
                   alt={featured.title}
                   className="h-full w-full object-cover transition duration-700 hover:scale-105"
                 />
@@ -312,7 +313,7 @@ export default function BlogPage() {
                   >
                     <div className="relative h-52 overflow-hidden">
                       <img
-                        src={`/${blog.imageUrl}`}
+                        src={safeImageUrl(blog.imageUrl)}
                         alt={blog.title}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />

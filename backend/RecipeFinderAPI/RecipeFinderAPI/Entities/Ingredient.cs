@@ -8,8 +8,8 @@ namespace RecipeFinderAPI.Entities
 
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public ICollection<RecipeIngredient> RecipeIngredients { get; set; }
+        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = [];
     }
 }

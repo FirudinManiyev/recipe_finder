@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { NavLink, Link, useLocation, useNavigate } from "react-router-dom"
+import { NavLink, Link, useLocation } from "react-router-dom"
 import { Menu, X, ChevronDown, ShieldCheck, LogOut, LayoutDashboard } from "lucide-react"
+import { useAuth } from "../../features/auth/useAuth"
 
 export default function Navbar() {
-    const navigate = useNavigate()
     const location = useLocation()
-
-    const token = sessionStorage.getItem("token")
-    const role = sessionStorage.getItem("role")
-    const username = sessionStorage.getItem("username")
+    const { status, user, logout: endSession } = useAuth()
+    const token = status === "authenticated"
+    const role = user?.role
+    const username = user?.username
 
     const [scrolled, setScrolled] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
@@ -17,12 +17,9 @@ export default function Navbar() {
     const dropdownRef = useRef<HTMLDivElement | null>(null)
 
     const logout = () => {
-        sessionStorage.removeItem("token")
-        sessionStorage.removeItem("role")
-        sessionStorage.removeItem("username")
         setDropdownOpen(false)
         setMenuOpen(false)
-        navigate("/login")
+        void endSession()
     }
 
     useEffect(() => {
@@ -47,9 +44,26 @@ export default function Navbar() {
     }, [])
 
     useEffect(() => {
-        setMenuOpen(false)
-        setDropdownOpen(false)
+        const frame = window.requestAnimationFrame(() => {
+            setMenuOpen(false)
+            setDropdownOpen(false)
+        })
+        return () => window.cancelAnimationFrame(frame)
     }, [location.pathname])
+
+    useEffect(() => {
+        if (!menuOpen) return
+        const previousOverflow = document.body.style.overflow
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setMenuOpen(false)
+        }
+        document.body.style.overflow = "hidden"
+        document.addEventListener("keydown", closeOnEscape)
+        return () => {
+            document.body.style.overflow = previousOverflow
+            document.removeEventListener("keydown", closeOnEscape)
+        }
+    }, [menuOpen])
 
     const navItems = [
         { to: "/", label: "Anasəhifə" },
@@ -99,6 +113,8 @@ export default function Navbar() {
                                 <div ref={dropdownRef} className="relative">
                                     <motion.button
                                         onClick={() => setDropdownOpen((prev) => !prev)}
+                                        aria-expanded={dropdownOpen}
+                                        aria-haspopup="menu"
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                         className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-2.5 py-1.5 text-slate-700 shadow-sm transition hover:border-emerald-400"
@@ -143,6 +159,8 @@ export default function Navbar() {
 
                             <button
                                 onClick={() => setMenuOpen((prev) => !prev)}
+                                aria-expanded={menuOpen}
+                                aria-controls="public-mobile-menu"
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 md:hidden"
                                 aria-label="Mobil menyu"
                             >
@@ -154,6 +172,7 @@ export default function Navbar() {
                     <AnimatePresence>
                         {menuOpen && (
                             <motion.div
+                                id="public-mobile-menu"
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}

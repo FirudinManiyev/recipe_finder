@@ -1,143 +1,89 @@
-# 🍳 Recipe Finder by Ingredients
+# Recipe Finder
 
-**Recipe Finder by Ingredients** istifadəçilərə evdə olan ərzaqlara əsasən uyğun reseptlər tapmağa kömək edən **fullstack web tətbiqidir**.
+Recipe Finder evdə olan ərzaqlara əsasən resept tapmağa kömək edən React + ASP.NET Core tətbiqidir. İstifadəçilər qeydiyyatdan keçə, sessiyanı səhifə yenilənəndə qoruya və reseptləri axtara bilirlər. Admin istifadəçilər resept, bloq və rəyləri qorunan paneldən idarə edirlər.
 
-Bu layihə **Code Academy final layihəsi** kimi hazırlanmışdır.
+## Texnologiyalar
 
-İstifadəçilər sistemə qeydiyyatdan keçə, daxil ola, reseptləri axtara və resept detalları ilə tanış ola bilərlər. Admin panel vasitəsilə isə reseptlər idarə olunur.
+- Frontend: React 19, TypeScript, Vite, React Router, Context + `useReducer`, React Hook Form, Tailwind CSS
+- Backend: ASP.NET Core 8 Web API, Entity Framework Core, SQL Server
+- Test: Vitest, React Testing Library, xUnit
 
----
+## Təhlükəsizlik
 
-# 🚀 İstifadə olunan texnologiyalar
+- JWT brauzerin JavaScript yaddaşında deyil, `HttpOnly`, `Secure`, `SameSite=Strict` cookie-də saxlanılır.
+- Dəyişiklik edən qorunan sorğular anti-CSRF tokeni tələb edir.
+- Login və feedback endpoint-lərində rate limit var.
+- Admin CRUD endpoint-ləri rol əsaslı authorization ilə qorunur.
+- Şifrələr PBKDF2 (unikal salt, 210 000 iterasiya) ilə saxlanılır; köhnə SHA-256 hash-lər uğurlu login zamanı avtomatik yenilənir.
+- DTO və frontend form validasiyası, təhlükəsiz şəkil URL yoxlaması və ümumi təhlükəsiz error cavabları mövcuddur.
+- EF Core parametrli sorğulardan istifadə edir; raw SQL yoxdur. UI mətnləri React vasitəsilə escape olunur və `dangerouslySetInnerHTML` istifadə edilmir.
 
-## Backend
+## Lokal quraşdırma
 
-* **C#**
-* **ASP.NET Core Web API**
-* **Entity Framework Core**
-* **JWT Authentication**
-* **Role-based Authorization**
-* **SQL Server**
+Tələblər: .NET 8 SDK, Node.js, npm və SQL Server.
 
-## Frontend
+### Backend
 
-* **React**
-* **TypeScript**
-* **Tailwind CSS**
-
-## Alətlər
-
-* Visual Studio
-* VS Code
-* Swagger (API test etmək üçün)
-* Git & GitHub
-
----
-
-# ✨ Əsas funksiyalar
-
-### 👤 Authentication sistemi
-
-* İstifadəçi qeydiyyatı (Register)
-* İstifadəçi girişi (Login)
-* JWT token ilə identifikasiya
-* Role əsaslı icazə sistemi (Admin / User)
-
-### 🔎 Resept axtarışı
-
-* İstifadəçilər ərzaqlara görə resept axtara bilirlər
-* Reseptlərin detallı məlumatları göstərilir
-
-### 📖 Admin panel
-
-Admin istifadəçilər aşağıdakı əməliyyatları edə bilər:
-
-* Yeni resept əlavə etmək
-* Reseptləri redaktə etmək
-* Reseptləri silmək
-* Resept məlumatlarını idarə etmək
-
-### 📚 Statik səhifələr
-
-* About Us
-* Blog
-
-### 🎨 UI xüsusiyyətləri
-
-* Responsive dizayn
-* Tailwind CSS ilə modern interfeys
-* Komponent əsaslı struktur
-
----
-
-# 🗄️ Verilənlər bazası
-
-Layihədə **SQL Server** istifadə olunur.
-
-Əsas cədvəllər:
-
-* Users
-* Recipes
-* Ingredients
-* RecipeIngredients
-* Blogs
-
----
-
-# 📂 Layihə strukturu
-
-```
-recipe-finder
-│
-├── backend
-│   ├── Controllers
-│   ├── Models
-│   ├── DTOs
-│   ├── Services
-│   └── Data
-│
-├── frontend
-│   ├── components
-│   ├── pages
-│   ├── services
-│   └── types
-│
-└── README.md
+```powershell
+cd backend/RecipeFinderAPI/RecipeFinderAPI
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=.\\SQLEXPRESS;Database=RecipeFinderDb;Trusted_Connection=True;TrustServerCertificate=True;"
+dotnet user-secrets set "Jwt:Key" "ən-azı-32-simvoldan-ibarət-lokal-gizli-açar"
+cd ../../..
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project backend/RecipeFinderAPI/RecipeFinderAPI --startup-project backend/RecipeFinderAPI/RecipeFinderAPI
+cd backend/RecipeFinderAPI/RecipeFinderAPI
+dotnet run --launch-profile https
 ```
 
----
+`Jwt:Key` və connection string repozitoriyaya yazılmamalıdır. Development API ünvanı standart olaraq `https://localhost:7192`-dir; Vite `/api` sorğularını bu ünvana proxy edir.
 
-# 🔐 API Authorization
+### Frontend
 
-Bəzi endpoint-lərə daxil olmaq üçün **JWT token** tələb olunur.
-
-Addımlar:
-
-1. Register və ya Login edin
-2. Token-i kopyalayın
-3. Swagger-də **Authorize** düyməsinə klikləyin
-4. Aşağıdakı formada daxil edin:
-
-```
-Bearer SIZIN_TOKEN
+```powershell
+cd frontend/recipe-finder-client
+Copy-Item .env.example .env
+npm ci
+npm run dev
 ```
 
----
+Frontend standart olaraq `http://localhost:5173` ünvanında açılır.
 
-# 🎓 Layihənin məqsədi
+Production deploy üçün frontend və API eyni origin-də saxlanılmalı, reverse proxy `/api` yolunu backend-ə ötürməlidir. Bu, `SameSite=Strict` cookie və `connect-src 'self'` CSP kontraktıdır. Ayrı origin/top-level site seçilərsə CORS, CSP və cookie siyasəti birlikdə yenidən konfiqurasiya edilməlidir.
 
-Bu layihə aşağıdakı bacarıqları inkişaf etdirmək üçün hazırlanmışdır:
+Reverse proxy istifadə olunursa onun daxili IP ünvanını `ReverseProxy__KnownProxies__0` (davamı üçün `__1`, `__2`) environment dəyişənləri ilə backend-ə verin. Yalnız etibar etdiyiniz proxy IP-lərini əlavə edin; rate limit real client IP-ni yalnız bu siyahıdan gələn `X-Forwarded-For` başlığından qəbul edir.
 
-* Fullstack web development
-* REST API qurulması
-* Authentication və Authorization sistemi
-* React + TypeScript istifadəsi
-* SQL Server ilə database dizaynı
+## Keyfiyyət yoxlamaları
 
----
+```powershell
+# Frontend
+cd frontend/recipe-finder-client
+npm run lint
+npm run test:run
+npm run build
+npm audit
 
-# 👨‍💻 Müəllif
+# Backend
+cd ../../backend/RecipeFinderAPI
+dotnet test RecipeFinderAPI.sln -c Release
+dotnet list RecipeFinderAPI.sln package --vulnerable --include-transitive
+```
 
-**Firudin Maniyev**
+## Əsas struktur
 
-Junior Fullstack Developer
+```text
+backend/RecipeFinderAPI/
+  RecipeFinderAPI/          API və data layer
+  RecipeFinderAPI.Tests/    security, auth və validation testləri
+frontend/recipe-finder-client/src/
+  app/                      tətbiq səviyyəli error handling
+  features/                 auth, recipe və blog funksiyaları
+  shared/                   API client, UI və ümumi util-lər
+  pages/                    route səhifələri
+  routes/                   public/protected/admin route-lar
+docs/superpowers/            dizayn və icra planı
+```
+
+## Auth axını
+
+Login cavabı tokeni body-də qaytarmır. Server cookie yaradır, frontend isə refresh zamanı `/api/auth/me` sorğusu ilə sessiyanı bərpa edir. Sessiya bitdikdə ilk gözlənilməyən `401` həssas state-i təmizləyir və istifadəçini bir dəfə login səhifəsinə yönləndirir. Logout tarixçədəki qorunan səhifələrin yenidən açılmasına imkan vermir.

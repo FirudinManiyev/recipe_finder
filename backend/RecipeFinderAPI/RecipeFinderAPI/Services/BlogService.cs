@@ -4,7 +4,6 @@ using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Entities;
 using RecipeFinderAPI.Exceptions;
 using RecipeFinderAPI.Interfaces;
-using System;
 
 public class BlogService : IBlogService
 {
@@ -52,9 +51,9 @@ public class BlogService : IBlogService
     {
         var blog = new Blog
         {
-            Title = dto.Title,
-            Content = dto.Content,
-            ImageUrl = dto.ImageUrl
+            Title = dto.Title.Trim(),
+            Content = dto.Content.Trim(),
+            ImageUrl = dto.ImageUrl.Trim()
         };
 
         _context.Blogs.Add(blog);
@@ -68,9 +67,9 @@ public class BlogService : IBlogService
         if (blog == null)
             throw new NotFoundException("Blog tapılmadı");
 
-        blog.Title = dto.Title;
-        blog.Content = dto.Content;
-        blog.ImageUrl = dto.ImageUrl;
+        blog.Title = dto.Title.Trim();
+        blog.Content = dto.Content.Trim();
+        blog.ImageUrl = dto.ImageUrl.Trim();
 
         await _context.SaveChangesAsync();
     }

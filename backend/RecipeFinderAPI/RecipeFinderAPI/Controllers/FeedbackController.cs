@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RecipeFinderAPI.DTOs;
 using RecipeFinderAPI.Interfaces;
 
@@ -18,6 +19,7 @@ namespace RecipeFinderAPI.Controllers
 
         // 🔓 Public - istənilən user feedback göndərə bilər
         [HttpPost]
+        [EnableRateLimiting("feedback")]
         public async Task<IActionResult> Create(CreateFeedbackDto dto)
         {
             await _service.CreateAsync(dto);
@@ -36,6 +38,7 @@ namespace RecipeFinderAPI.Controllers
         // 🔒 Admin feedback silir
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);

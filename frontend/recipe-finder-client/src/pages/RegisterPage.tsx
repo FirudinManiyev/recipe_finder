@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import api from "../api/axios";
-import { Eye, EyeOff, Sparkles, CheckCircle, AlertCircle, Loader } from "lucide-react";
+import api from "../shared/api/client";
+import { Eye, EyeOff, CheckCircle, AlertCircle, Loader } from "lucide-react";
 import toast from "react-hot-toast";
+import { toApiProblem } from "../shared/api/errors";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -67,18 +68,26 @@ export default function RegisterPage() {
       newErrors.username = "Username tələb olunur";
     } else if (form.username.length < 3) {
       newErrors.username = "Username ən azı 3 karakter olmalıdır";
+    } else if (form.username.length > 50 || !/^[\p{L}\p{N}._-]+$/u.test(form.username)) {
+      newErrors.username = "Username ən çox 50 simvol olmalı və yalnız hərf, rəqəm, nöqtə, alt xətt və tire saxlamalıdır";
     }
 
     if (!form.email.trim()) {
       newErrors.email = "Email tələb olunur";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Etibarlı email daxil edin";
+    } else if (form.email.length > 150) {
+      newErrors.email = "Email ən çox 150 simvol ola bilər";
     }
 
     if (!form.password.trim()) {
       newErrors.password = "Password tələb olunur";
-    } else if (form.password.length < 6) {
-      newErrors.password = "Password ən azı 6 karakter olmalıdır";
+    } else if (form.password.length < 8) {
+      newErrors.password = "Şifrə ən azı 8 simvol olmalıdır";
+    } else if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) {
+      newErrors.password = "Şifrə ən azı bir hərf və bir rəqəm daxil etməlidir";
+    } else if (form.password.length > 128) {
+      newErrors.password = "Şifrə ən çox 128 simvol ola bilər";
     }
 
     setErrors(newErrors);
@@ -94,16 +103,15 @@ export default function RegisterPage() {
 
     try {
       await api.post("/auth/register", {
-        username: form.username,
-        email: form.email,
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
       });
 
       toast.success("Qeydiyyat uğurla tamamlandı! ✨");
       navigate("/login");
-    } catch (error: any) {
-      console.log(error);
-      toast.error(error.response?.data?.message || "Xəta baş verdi. Yenidən cəhd edin!");
+    } catch (error: unknown) {
+      toast.error(toApiProblem(error).message);
     } finally {
       setIsLoading(false);
     }
@@ -181,6 +189,9 @@ export default function RegisterPage() {
                   placeholder="Username"
                   value={form.username}
                   onChange={handleChange}
+                  minLength={3}
+                  maxLength={50}
+                  autoComplete="username"
                   className={`w-full px-5 py-3 rounded-2xl border-2 transition-all duration-300 focus:outline-none text-gray-800 placeholder-gray-400 bg-white/50 backdrop-blur ${
                     errors.username
                       ? "border-red-400 focus:ring-2 focus:ring-red-200"
@@ -214,6 +225,8 @@ export default function RegisterPage() {
                   placeholder="Email"
                   value={form.email}
                   onChange={handleChange}
+                  maxLength={150}
+                  autoComplete="email"
                   className={`w-full px-5 py-3 rounded-2xl border-2 transition-all duration-300 focus:outline-none text-gray-800 placeholder-gray-400 bg-white/50 backdrop-blur ${
                     errors.email
                       ? "border-red-400 focus:ring-2 focus:ring-red-200"
@@ -247,6 +260,9 @@ export default function RegisterPage() {
                   placeholder="Password"
                   value={form.password}
                   onChange={handleChange}
+                  minLength={8}
+                  maxLength={128}
+                  autoComplete="new-password"
                   className={`w-full px-5 py-3 pr-12 rounded-2xl border-2 transition-all duration-300 focus:outline-none text-gray-800 placeholder-gray-400 bg-white/50 backdrop-blur ${
                     errors.password
                       ? "border-red-400 focus:ring-2 focus:ring-red-200"

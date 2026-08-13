@@ -1,53 +1,34 @@
-﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RecipeFinderAPI.Data;
 using RecipeFinderAPI.DTOs;
-using RecipeFinderAPI.Entities;
 using RecipeFinderAPI.Exceptions;
 using RecipeFinderAPI.Interfaces;
+using RecipeFinderAPI.Mappings;
 
-namespace RecipeFinderAPI.Services
+namespace RecipeFinderAPI.Services;
+
+public class FeedbackService : IFeedbackService
 {
-    public class FeedbackService : IFeedbackService
+    private readonly AppDbContext _context;
+    public FeedbackService(AppDbContext context) => _context = context;
+
+    public async Task CreateAsync(CreateFeedbackDto dto)
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        _context.Feedbacks.Add(dto.ToEntity());
+        await _context.SaveChangesAsync();
+    }
 
-        public FeedbackService(AppDbContext context, IMapper mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
+    public async Task<List<FeedbackDto>> GetAllAsync()
+    {
+        var feedbacks = await _context.Feedbacks.AsNoTracking().OrderByDescending(item => item.Id).ToListAsync();
+        return feedbacks.Select(item => item.ToDto()).ToList();
+    }
 
-        // User feedback göndərir
-        public async Task CreateAsync(CreateFeedbackDto dto)
-        {
-            var feedback = _mapper.Map<Feedback>(dto);
-
-            _context.Feedbacks.Add(feedback);
-            await _context.SaveChangesAsync();
-        }
-
-        // Admin bütün feedbackləri görür
-        public async Task<List<FeedbackDto>> GetAllAsync()
-        {
-            var feedbacks = await _context.Feedbacks
-                .OrderByDescending(f => f.Id)
-                .ToListAsync();
-
-            return _mapper.Map<List<FeedbackDto>>(feedbacks);
-        }
-
-        // Admin feedback silir
-        public async Task DeleteAsync(int id)
-        {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-
-            if (feedback == null)
-                throw new NotFoundException("Feedback tapılmadı");
-
-            _context.Feedbacks.Remove(feedback);
-            await _context.SaveChangesAsync();
-        }
+    public async Task DeleteAsync(int id)
+    {
+        var feedback = await _context.Feedbacks.FindAsync(id)
+            ?? throw new NotFoundException("Feedback tapılmadı");
+        _context.Feedbacks.Remove(feedback);
+        await _context.SaveChangesAsync();
     }
 }

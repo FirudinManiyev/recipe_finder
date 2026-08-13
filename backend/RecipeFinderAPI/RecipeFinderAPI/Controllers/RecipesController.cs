@@ -42,6 +42,7 @@ namespace RecipeFinderAPI.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateRecipeDto dto)
         {
             await _service.CreateAsync(dto);
@@ -67,6 +68,8 @@ namespace RecipeFinderAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(int id, CreateRecipeDto dto)
         {
             await _service.UpdateAsync(id, dto);
@@ -74,6 +77,8 @@ namespace RecipeFinderAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);

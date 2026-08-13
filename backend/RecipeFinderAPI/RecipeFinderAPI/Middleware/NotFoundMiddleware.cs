@@ -16,7 +16,7 @@ namespace RecipeFinderAPI.Middleware
         {
             await _next(context);
 
-            if (context.Response.StatusCode == (int)HttpStatusCode.NotFound)
+            if (context.Response.StatusCode == (int)HttpStatusCode.NotFound && !context.Response.HasStarted)
             {
                 context.Response.ContentType = "application/json";
 

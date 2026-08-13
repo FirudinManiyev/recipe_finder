@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Recipe } from "../types/recipe";
-import { getRecipeById, getRecipeCount, getRecipes } from "../services/recipeService";
+import { safeImageUrl } from "../shared/lib/safeImageUrl";
+import { getRecipeById, getRecipeCount, getRecipes } from "../features/recipes/recipeApi";
 import {
     ArrowLeft,
     ArrowRight,
@@ -14,11 +15,6 @@ import {
     UtensilsCrossed,
 } from "lucide-react";
 
-const imagePath = (value: string) => {
-    if (!value) return "/images/placeholder.jpg";
-    if (value.startsWith("http://") || value.startsWith("https://")) return value;
-    return `/${value.replace(/^\/+/, "")}`;
-};
 
 const difficultyClass = (difficulty: string) => {
     const normalized = difficulty
@@ -201,7 +197,7 @@ export default function RecipeDetailPage() {
                     <div className="grid lg:grid-cols-2">
                         <div className="relative h-80 overflow-hidden md:h-96 lg:h-full">
                             <img
-                                src={imagePath(recipe.imageUrl)}
+                                src={safeImageUrl(recipe.imageUrl)}
                                 alt={recipe.title}
                                 className="h-full w-full object-cover transition duration-700 hover:scale-105"
                             />
@@ -331,7 +327,7 @@ export default function RecipeDetailPage() {
                                 >
                                     <div className="relative h-44 overflow-hidden">
                                         <img
-                                            src={imagePath(item.imageUrl)}
+                                            src={safeImageUrl(item.imageUrl)}
                                             alt={item.title}
                                             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                         />

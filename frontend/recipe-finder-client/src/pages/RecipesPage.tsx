@@ -19,7 +19,8 @@ import {
     getRecipes,
     getRandomRecipe,
     searchRecipes,
-} from "../services/recipeService";
+} from "../features/recipes/recipeApi";
+import { safeImageUrl } from "../shared/lib/safeImageUrl";
 
 const PAGE_SIZE = 6;
 
@@ -74,11 +75,6 @@ const getDifficultyKey = (value: string) => {
     return normalized;
 };
 
-const imagePath = (value: string) => {
-    if (!value) return "/images/placeholder.jpg";
-    if (value.startsWith("http://") || value.startsWith("https://")) return value;
-    return `/${value.replace(/^\/+/, "")}`;
-};
 
 const difficultyClass = (difficulty: string) => {
     const level = getDifficultyKey(difficulty);
@@ -322,7 +318,7 @@ export default function RecipesPage() {
                         <div className="grid lg:grid-cols-2">
                             <div className="relative h-72 overflow-hidden md:h-80 lg:h-full">
                                 <img
-                                    src={imagePath(featuredRecipe.imageUrl)}
+                                    src={safeImageUrl(featuredRecipe.imageUrl)}
                                     alt={featuredRecipe.title}
                                     className="h-full w-full object-cover transition duration-700 hover:scale-105"
                                 />
@@ -534,7 +530,7 @@ export default function RecipesPage() {
                                     >
                                         <div className="relative h-52 overflow-hidden">
                                             <img
-                                                src={imagePath(recipe.imageUrl)}
+                                                src={safeImageUrl(recipe.imageUrl)}
                                                 alt={recipe.title}
                                                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                             />

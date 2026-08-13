@@ -22,7 +22,21 @@ lerna-debug.log*
 
 # Env files
 .env
+.env.*
 *.local
+!.env.example
+!**/.env.example
+appsettings.*.local.json
+
+# Test / coverage artifacts
+coverage/
+TestResults/
+*.trx
+
+# Local certificates and secrets
+*.pfx
+*.p12
+secrets.json
 
 # Editor / OS
 .vscode/*

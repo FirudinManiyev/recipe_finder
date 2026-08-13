@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CalendarDays } from "lucide-react";
-import api from "../api/axios";
+import api from "../shared/api/client";
 import type { Blog } from "../types/blog";
+import { safeImageUrl } from "../shared/lib/safeImageUrl";
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -103,7 +104,7 @@ export default function BlogDetailPage() {
         <article className="overflow-hidden rounded-3xl border border-gray-200 bg-white/85 shadow-xl backdrop-blur">
           <div className="relative h-72 overflow-hidden md:h-96">
             <img
-              src={`/${blog.imageUrl}`}
+              src={safeImageUrl(blog.imageUrl)}
               alt={blog.title}
               className="h-full w-full object-cover transition duration-700 hover:scale-105"
             />

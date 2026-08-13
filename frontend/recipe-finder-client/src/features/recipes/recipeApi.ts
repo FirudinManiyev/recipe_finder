@@ -1,5 +1,6 @@
-import api from "./api";
-import type { Recipe } from "../types/recipe";
+import axios from "axios";
+import api from "../../shared/api/client";
+import type { Recipe } from "../../types/recipe";
 
 export const getRecipes = async (
     pageNumber: number = 1,
@@ -30,8 +31,9 @@ export const getRandomRecipe = async (): Promise<Recipe | null> => {
     try {
         const response = await api.get("/recipes/random");
         return response.data as Recipe;
-    } catch {
-        return null;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+        throw error;
     }
 };
 
@@ -39,4 +41,3 @@ export const getRecipeCount = async (): Promise<number> => {
     const response = await api.get("/recipes/count");
     return Number(response.data) || 0;
 };
-

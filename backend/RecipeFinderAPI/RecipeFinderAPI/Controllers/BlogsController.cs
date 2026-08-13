@@ -29,6 +29,7 @@ public class BlogsController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateBlogDto dto)
     {
         await _service.CreateAsync(dto);
@@ -37,6 +38,7 @@ public class BlogsController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int id, CreateBlogDto dto)
     {
         await _service.UpdateAsync(id, dto);
@@ -45,6 +47,7 @@ public class BlogsController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
         await _service.DeleteAsync(id);

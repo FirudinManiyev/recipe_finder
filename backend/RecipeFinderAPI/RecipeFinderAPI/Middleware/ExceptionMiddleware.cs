@@ -1,46 +1,48 @@
-﻿using System.Net;
-using System.Text.Json;
+using System.Net;
 using RecipeFinderAPI.Exceptions;
 
-namespace RecipeFinderAPI.Middleware
+namespace RecipeFinderAPI.Middleware;
+
+public class ExceptionMiddleware
 {
-    public class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+        _logger = logger;
+    }
 
-        public ExceptionMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
+            await _next(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (NotFoundException exception)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                context.Response.ContentType = "application/json";
-
-                if (ex is NotFoundException)
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                }
-                else
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                }
-
-                var response = new
-                {
-                    statusCode = context.Response.StatusCode,
-                    message = ex.Message
-                };
-
-                var json = JsonSerializer.Serialize(response);
-                await context.Response.WriteAsync(json);
-            }
+            await WriteError(context, HttpStatusCode.NotFound, exception.Message);
         }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Unhandled API error. TraceId: {TraceId}", context.TraceIdentifier);
+            await WriteError(
+                context,
+                HttpStatusCode.InternalServerError,
+                "Gözlənilməz xəta baş verdi. Bir qədər sonra yenidən cəhd edin.");
+        }
+    }
+
+    private static Task WriteError(HttpContext context, HttpStatusCode status, string message)
+    {
+        context.Response.StatusCode = (int)status;
+        context.Response.ContentType = "application/json";
+        return context.Response.WriteAsJsonAsync(new
+        {
+            statusCode = context.Response.StatusCode,
+            message,
+            traceId = context.TraceIdentifier
+        });
     }
 }
