@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,8 +73,9 @@ public class AuthController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        Response.Cookies.Append(AuthCookieName, _jwtService.GenerateToken(user), BuildCookieOptions());
-        return Ok(ToResponse(user));
+        var token = _jwtService.GenerateToken(user);
+        Response.Cookies.Append(AuthCookieName, token.Value, BuildCookieOptions(token.ExpiresAtUtc));
+        return Ok(ToResponse(user, token.ExpiresAtUtc));
     }
 
     [Authorize]
@@ -81,11 +83,15 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Me()
     {
         var username = User.FindFirstValue(ClaimTypes.Name);
-        if (string.IsNullOrWhiteSpace(username))
+        var expirationClaim = User.FindFirstValue(JwtRegisteredClaimNames.Exp);
+        if (string.IsNullOrWhiteSpace(username) ||
+            !long.TryParse(expirationClaim, out var expirationSeconds))
             return Unauthorized();
 
         var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Username == username);
-        return user is null ? Unauthorized() : Ok(ToResponse(user));
+        return user is null
+            ? Unauthorized()
+            : Ok(ToResponse(user, DateTimeOffset.FromUnixTimeSeconds(expirationSeconds)));
     }
 
     [HttpGet("csrf")]
@@ -103,19 +109,21 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    private static CookieOptions BuildCookieOptions() => new()
+    private static CookieOptions BuildCookieOptions(DateTimeOffset? expiresAtUtc = null) => new()
     {
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.Strict,
         Path = "/",
         MaxAge = TimeSpan.FromHours(3),
+        Expires = expiresAtUtc,
         IsEssential = true
     };
 
-    private static object ToResponse(User user) => new
+    private static object ToResponse(User user, DateTimeOffset expiresAtUtc) => new
     {
         username = user.Username,
-        role = user.Role
+        role = user.Role,
+        expiresAtUtc
     };
 }

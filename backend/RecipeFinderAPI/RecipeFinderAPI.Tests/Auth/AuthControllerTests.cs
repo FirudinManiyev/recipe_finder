@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,9 +41,37 @@ public class AuthControllerTests
         var json = JsonSerializer.Serialize(ok.Value);
         var cookie = controller.Response.Headers.SetCookie.ToString();
         Assert.DoesNotContain("token", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("expiresAtUtc", json, StringComparison.Ordinal);
         Assert.Contains("recipe_finder_auth=", cookie);
         Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("samesite=strict", cookie, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Me_ReturnsTheAuthenticatedSessionExpiration()
+    {
+        await using var context = CreateContext();
+        context.Users.Add(new User
+        {
+            Username = "firudin",
+            Email = "user@example.com",
+            PasswordHash = PasswordHasher.Hash("StrongPass123!"),
+            Role = "User"
+        });
+        await context.SaveChangesAsync();
+        var controller = CreateController(context);
+        var expiration = DateTimeOffset.Parse("2026-08-17T13:00:00Z");
+        controller.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.Name, "firudin"),
+            new Claim(JwtRegisteredClaimNames.Exp, expiration.ToUnixTimeSeconds().ToString())
+        ], "test"));
+
+        var result = await controller.Me();
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        using var json = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value));
+        Assert.Equal(expiration, json.RootElement.GetProperty("expiresAtUtc").GetDateTimeOffset());
     }
 
     [Fact]

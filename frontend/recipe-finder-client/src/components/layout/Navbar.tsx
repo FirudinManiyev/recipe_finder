@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { NavLink, Link, useLocation } from "react-router-dom"
-import { Menu, X, ChevronDown, ShieldCheck, LogOut, LayoutDashboard } from "lucide-react"
+import { Menu, X, ChevronDown, ShieldCheck, LogOut, LayoutDashboard, UserRound } from "lucide-react"
 import { useAuth } from "../../features/auth/useAuth"
 
 export default function Navbar() {
@@ -138,6 +138,10 @@ export default function Navbar() {
                                                 <div className="mb-2 rounded-xl bg-linear-to-r from-emerald-50 to-orange-50 px-3 py-2 text-xs text-slate-600">
                                                     Hesab Menyusu
                                                 </div>
+                                                <Link to="/account" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                                                    <UserRound size={16} />
+                                                    Hesabım
+                                                </Link>
                                                 {role === "Admin" && (
                                                     <Link to="/admin/dashboard" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
                                                         <LayoutDashboard size={16} />
@@ -197,6 +201,10 @@ export default function Navbar() {
 
                                     {token && role === "Admin" && (
                                         <MobileItem to="/admin/dashboard" label="Admin Panel" />
+                                    )}
+
+                                    {token && (
+                                        <MobileItem to="/account" label="Hesabım" />
                                     )}
 
                                     {token && (

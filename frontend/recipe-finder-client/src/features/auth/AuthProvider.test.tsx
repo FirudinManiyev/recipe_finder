@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from './AuthProvider'
 import { useAuth } from './useAuth'
 
@@ -49,8 +49,17 @@ function renderSession() {
   )
 }
 
+const activeAdminSession = {
+  data: {
+    username: 'firudin',
+    role: 'Admin',
+    expiresAtUtc: '2099-01-01T00:00:00.000Z',
+  },
+}
+
 describe('AuthProvider session lifecycle', () => {
   beforeEach(() => {
+    vi.useRealTimers()
     authApi.get.mockReset()
     authApi.post.mockReset()
     interceptorHooks.reset.mockReset()
@@ -60,8 +69,10 @@ describe('AuthProvider session lifecycle', () => {
     window.sessionStorage.clear()
   })
 
+  afterEach(() => vi.useRealTimers())
+
   it('restores an authenticated session from the HttpOnly cookie on refresh', async () => {
-    authApi.get.mockResolvedValue({ data: { username: 'firudin', role: 'Admin' } })
+    authApi.get.mockResolvedValue(activeAdminSession)
 
     renderSession()
 
@@ -71,7 +82,7 @@ describe('AuthProvider session lifecycle', () => {
   })
 
   it('clears legacy sensitive state and replaces the protected route on logout', async () => {
-    authApi.get.mockResolvedValue({ data: { username: 'firudin', role: 'Admin' } })
+    authApi.get.mockResolvedValue(activeAdminSession)
     authApi.post.mockResolvedValue({})
     window.localStorage.setItem('token', 'legacy-token')
     window.sessionStorage.setItem('username', 'firudin')
@@ -89,7 +100,7 @@ describe('AuthProvider session lifecycle', () => {
 
   it('rotates the cached CSRF token after a different user logs in', async () => {
     authApi.get.mockRejectedValue(new Error('anonymous'))
-    authApi.post.mockResolvedValue({ data: { username: 'firudin', role: 'Admin' } })
+    authApi.post.mockResolvedValue(activeAdminSession)
 
     renderSession()
     await screen.findByText('anonymous')
@@ -100,7 +111,7 @@ describe('AuthProvider session lifecycle', () => {
   })
 
   it('handles an expired session once without calling logout recursively', async () => {
-    authApi.get.mockResolvedValue({ data: { username: 'firudin', role: 'Admin' } })
+    authApi.get.mockResolvedValue(activeAdminSession)
 
     renderSession()
     await screen.findByText('firudin')
@@ -111,6 +122,29 @@ describe('AuthProvider session lifecycle', () => {
     })
 
     await waitFor(() => expect(screen.getByText('Login səhifəsi')).toBeInTheDocument())
+    expect(authApi.post).not.toHaveBeenCalled()
+  })
+
+  it('ends an idle session when its server-provided expiration time is reached', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-17T10:00:00.000Z'))
+    authApi.get.mockResolvedValue({
+      data: {
+        username: 'firudin',
+        role: 'User',
+        expiresAtUtc: '2026-08-17T10:00:01.000Z',
+      },
+    })
+
+    renderSession()
+    await act(async () => undefined)
+    expect(screen.getByText('authenticated')).toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000)
+    })
+
+    expect(screen.getByText(/Login/i)).toBeInTheDocument()
     expect(authApi.post).not.toHaveBeenCalled()
   })
 })

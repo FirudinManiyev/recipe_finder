@@ -86,7 +86,7 @@ docs/superpowers/            dizayn və icra planı
 
 ## Auth axını
 
-Login cavabı tokeni body-də qaytarmır. Server cookie yaradır, frontend isə refresh zamanı `/api/auth/me` sorğusu ilə sessiyanı bərpa edir. Sessiya bitdikdə ilk gözlənilməyən `401` həssas state-i təmizləyir və istifadəçini bir dəfə login səhifəsinə yönləndirir. Logout tarixçədəki qorunan səhifələrin yenidən açılmasına imkan vermir.
+Login cavabı tokeni body-də qaytarmır. Server `HttpOnly` cookie yaradır və yalnız sessiyanın təhlükəsiz bitmə vaxtını (`expiresAtUtc`) cavabda paylaşır; frontend refresh zamanı `/api/auth/me` sorğusu ilə sessiyanı bərpa edib həmin vaxta taymer qurur. Sessiya boş dayansa belə vaxt bitən kimi həssas state təmizlənir və istifadəçi bir dəfə login səhifəsinə yönləndirilir. Gecikmiş sorğudan gələn `401` eyni axının ehtiyat qorumasıdır və təkrar logout dövrəsi yaratmır. Logout tarixçədəki qorunan səhifələrin yenidən açılmasına imkan vermir.
 
 ## Müəllif
 

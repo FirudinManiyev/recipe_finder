@@ -5,6 +5,10 @@ export type AuthUser = {
   role: AuthRole
 }
 
+export type AuthSession = AuthUser & {
+  expiresAtUtc: string
+}
+
 export type AuthStatus = 'checking' | 'authenticated' | 'anonymous'
 
 export type AuthState = {

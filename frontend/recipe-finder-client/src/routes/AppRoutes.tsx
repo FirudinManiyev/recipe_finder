@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
 import AdminLayout from '../layouts/AdminLayout'
 import AdminRoute from '../components/AdminRoute'
+import ProtectedRoute from '../components/ProtectedRoute'
 import { AppErrorBoundary } from '../app/errors/AppErrorBoundary'
 
 const HomePage = lazy(() => import('../pages/HomePage'))
@@ -16,6 +17,7 @@ const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const UnauthorizedPage = lazy(() => import('../pages/UnauthorizedPage'))
+const AccountPage = lazy(() => import('../pages/AccountPage'))
 const AdminRecipesPage = lazy(() => import('../pages/admin/AdminRecipesPage'))
 const AdminBlogsPage = lazy(() => import('../pages/admin/AdminBlogsPage'))
 const AdminFeedbackPage = lazy(() => import('../pages/admin/AdminFeedbackPage'))
@@ -44,6 +46,7 @@ export default function AppRoutes() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="/forbidden" element={<UnauthorizedPage />} />
+          <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/error" element={<StatusPage />} />
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index element={<Navigate to="dashboard" replace />} />

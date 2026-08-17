@@ -6,6 +6,8 @@ using System.Text;
 
 namespace RecipeFinderAPI.Services
 {
+    public sealed record JwtToken(string Value, DateTimeOffset ExpiresAtUtc);
+
     public class JwtService
     {
         private readonly IConfiguration _configuration;
@@ -15,8 +17,10 @@ namespace RecipeFinderAPI.Services
             _configuration = configuration; 
         }
 
-        public string GenerateToken(User user)
+        public JwtToken GenerateToken(User user)
         {
+            var expiresAtUtc = DateTimeOffset.FromUnixTimeSeconds(
+                DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds());
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.Username),
@@ -32,11 +36,13 @@ namespace RecipeFinderAPI.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(3),
+                expires: expiresAtUtc.UtcDateTime,
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtToken(
+                new JwtSecurityTokenHandler().WriteToken(token),
+                expiresAtUtc);
         }
     }
 }
